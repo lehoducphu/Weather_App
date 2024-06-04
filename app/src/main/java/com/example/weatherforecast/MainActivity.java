@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void event(){
+        //link goi api
         String url = "https://api.openweathermap.org/data/2.5/weather?id=1566083&lang=vi&units=metric&appid=de13238c0859cbbf9d42bacb340bbe2c";
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -77,13 +78,11 @@ public class MainActivity extends AppCompatActivity {
 //                            int iconResourceId = getResources().getIdentifier("icon_" + weatherDescription.replace(" ", ""), "drawable", getPackageName());
 //                            weatherImageView.setImageResource(iconResourceId);
 
-                        }
-                        catch (JSONException e)
-                        {
+                        } catch (JSONException e){
                             e.printStackTrace();
                         }
                     }
-                }, new Response.ErrorListener() {
+                    }, new Response.ErrorListener() {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
