@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
                         try
                         {
+
+                            //lay ra cac thong tin tra ve tu API
                             JSONObject mainJSONObject = responseObject.getJSONObject("main");
                             JSONArray weatherArray = responseObject.getJSONArray("weather");
                             JSONObject firstWeatherObject = weatherArray.getJSONObject(0);
@@ -70,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
                             String feels_like = Integer.toString((int) Math.round(mainJSONObject.getDouble("feels_like")));
 
                             String min_max_feelslike = temp_min + " - " + temp_max + " cảm giác như " + feels_like;
+
+                            //set gia tri cho cac View trong layout
                             temperature.setText(temp);
                             description.setText(weatherDescription);
                             city_name.setText(city);
