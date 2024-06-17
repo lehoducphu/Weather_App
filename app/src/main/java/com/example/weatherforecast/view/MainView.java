@@ -24,7 +24,7 @@ public class MainView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_view);
 
-        // Get API response and store it in the member variable
+        // Get API response and store it in  weatherResponse variable
         getCurrentWeather("1581130", "VI", "metric", API_KEY);
     }
 
