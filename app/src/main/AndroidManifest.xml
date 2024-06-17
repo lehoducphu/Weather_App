@@ -15,12 +15,7 @@
         android:theme="@style/Theme.WeatherForecast"
         tools:targetApi="31">
         <activity
-            android:name=".WeatherView"
-            android:exported="false"
-            android:label="@string/title_activity_weather_view"
-            android:theme="@style/Theme.WeatherForecast.NoActionBar" />
-        <activity
-            android:name=".MainActivity"
+            android:name=".view.MainView"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

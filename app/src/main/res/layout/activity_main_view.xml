@@ -1,51 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#203864"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 
     <TextView
-        android:id="@+id/city_name"
+        android:id="@+id/tvcityname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="80dp"
         android:text="City Name"
+        android:textColor="#FFFFFF"
         android:textSize="30dp" />
 
     <TextView
-        android:id="@+id/temperature"
+        android:id="@+id/tvTemperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/city_name"
+        android:layout_below="@id/tvcityname"
         android:text="Temp"
+        android:textColor="#FFFFFF"
         android:textSize="100dp" />
 
     <TextView
         android:id="@+id/unit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/temperature"
+        android:layout_toRightOf="@id/tvTemperature"
         android:layout_marginTop="130dp"
-        android:text="C"
+        android:text="o"
+        android:textColor="#FFFFFF"
         android:textSize="50dp" />
 
     <TextView
-        android:id="@+id/description"
+        android:id="@+id/tvDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/temperature"
+        android:layout_below="@id/tvTemperature"
         android:layout_marginTop="46dp"
         android:text="description"
+        android:textColor="#FFFFFF"
         android:textSize="30dp" />
 
     <TextView
-        android:id="@+id/minmax_feellike"
+        android:id="@+id/tvFeellike"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/description"
+        android:layout_below="@id/tvDescription"
         android:layout_marginTop="57dp"
         android:text="Min / Max Cảm giác như"
+        android:textColor="#FFFFFF"
         android:textSize="30dp" />
 
 </RelativeLayout>
