@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.weatherforecast"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -51,4 +51,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
+    implementation ("com.google.android.material:material:1.4.0")
+    implementation ("androidx.navigation:navigation-fragment:2.3.5")
+    implementation ("androidx.navigation:navigation-ui:2.3.5")
 }
