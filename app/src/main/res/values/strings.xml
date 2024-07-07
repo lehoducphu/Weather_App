@@ -11,4 +11,10 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+
+    <string-array name="refresh_options">
+        <item>Do not automatically refresh</item>
+        <item>Every hour</item>
+        <item>Every 3 hours</item>
+    </string-array>
 </resources>
