@@ -3,6 +3,7 @@ package com.example.weatherforecast.api;
 import com.example.weatherforecast.model.weather.CurrentWeatherResponse;
 
 import com.example.weatherforecast.model.geographic.City;
+import com.example.weatherforecast.model.weather.DailyWeatherResponse;
 import com.example.weatherforecast.model.weather.HourlyWeatherResponse;
 
 import java.util.List;
@@ -39,6 +40,15 @@ public interface OpenWeatherApi {
                 @Query("appid") String apiKey
         );
 
+    @GET("data/2.5/forecast")
+    Call<DailyWeatherResponse> getDailyWeather(
+            @Query("lat") double lat,
+            @Query("lon") double lon,
+            @Query("cnt") int cnt,
+            @Query("lang") String lang,
+            @Query("units") String units,
+            @Query("appid") String apiKey
+    );
 
 
 

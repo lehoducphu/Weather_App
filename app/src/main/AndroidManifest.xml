@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -21,7 +22,7 @@
             android:name=".view.ExConnectDbView"
             android:exported="false" />
         <activity
-            android:name=".view.MainViewActivity"
+            android:name=".view.FiveDayWeatherView"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,6 +32,15 @@
         </activity>
         <activity android:name=".view.SettingsViewActivity" />
         <activity android:name=".view.CitiesWeatherViewActivity" />
+        <receiver android:name=".widget.WeatherWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_provider" />
+        </receiver>
     </application>
 
 </manifest>
