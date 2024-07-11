@@ -54,4 +54,7 @@ dependencies {
     implementation ("com.google.android.material:material:1.4.0")
     implementation ("androidx.navigation:navigation-fragment:2.3.5")
     implementation ("androidx.navigation:navigation-ui:2.3.5")
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation ("com.squareup.picasso:picasso:2.8")
+
 }
