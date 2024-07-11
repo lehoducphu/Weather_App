@@ -1,4 +1,4 @@
-package com.example.weatherforecast.model;
+package com.example.weatherforecast.model.weather;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -13,6 +13,9 @@ public class Sys {
     private long sunrise;
     @SerializedName("sunset")
     private long sunset;
+
+    @SerializedName("pod")
+    private String pod;
 
     public int getType() {
         return type;
@@ -32,5 +35,9 @@ public class Sys {
 
     public long getSunset() {
         return sunset;
+    }
+
+    public String getPod() {
+        return pod;
     }
 }

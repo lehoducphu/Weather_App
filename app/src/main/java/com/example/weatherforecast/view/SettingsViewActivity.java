@@ -1,7 +1,5 @@
 package com.example.weatherforecast.view;
 
-import static com.example.weatherforecast.view.MainViewActivity.REQUEST_LOCATION;
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,15 +16,25 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.weatherforecast.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 public class SettingsViewActivity extends AppCompatActivity {
     private Spinner refreshSpinner;
     private Switch locationSwitch;
+
+    private Location currentLocation;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+
+    public static final int REQUEST_LOCATION = 1; // Unique request code for location permission
 
 
     @Override
@@ -34,8 +42,11 @@ public class SettingsViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
         // set view Refresh Option
         setRefreshOptionView();
+
         // set view Allow Location Option
         setLocationOptionView();
 
@@ -67,24 +78,24 @@ public class SettingsViewActivity extends AppCompatActivity {
 
     private void setLocationOptionView() {
         locationSwitch = findViewById(R.id.locationSwitch);
-        boolean isLocationEnabled = getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
-                .getBoolean("LocationEnabled", false);
 
+        boolean isLocationEnabled = getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
+                    .getBoolean("LocationEnabled", false);
+
+        // Set switch to the value stored in preferences
         locationSwitch.setChecked(isLocationEnabled);
 
         locationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+
                 getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
                         .edit()
                         .putBoolean("LocationEnabled", isChecked)
-                        .apply();
+                        .apply();    // Get current location if switch is checked
 
-                // Get current location if switch is checked
-                if(isChecked) {
-                    getCurrentLocation();
-                    startActivity(new Intent(SettingsViewActivity.this, MainViewActivity.class));
-                }else{
+                if (!isChecked) {
                     MainViewActivity.setLat(0);
                     Log.d("Settings", "Lat: " + MainViewActivity.getLat());
                     MainViewActivity.setLon(0);
@@ -93,46 +104,44 @@ public class SettingsViewActivity extends AppCompatActivity {
                     //display toast message to user that location is disabled
                     Toast.makeText(SettingsViewActivity.this, "location info deleted", Toast.LENGTH_SHORT).show();
 
+                } else {
+                    Toast.makeText(SettingsViewActivity.this, getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
+                            .getBoolean("LocationEnabled", false)+"", Toast.LENGTH_SHORT).show();
+
+                    // Check if permission is granted. If not, request permission, else start MainViewActivity
+                    if (ContextCompat.checkSelfPermission(SettingsViewActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(SettingsViewActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+
+                    } else {
+                        startActivity(new Intent(SettingsViewActivity.this, MainViewActivity.class));
+                    }
+
                 }
 
             }
         });
     }
 
-    public void getCurrentLocation() {
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        String locationProvider = LocationManager.GPS_PROVIDER;
-
-        // Check if permission is granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Request location updates
-            locationManager.requestLocationUpdates(locationProvider, 0, 0, new LocationListener() {
-                @Override
-                public void onLocationChanged(Location location) {
-                    // Get latitude and longitude
-                    MainViewActivity.setLat(location.getLatitude());
-                    Log.d("Settings", "Lat: " + MainViewActivity.getLat());
-
-                    MainViewActivity.setLon(location.getLongitude());
-                    Log.d("Settings", "Lon: " + MainViewActivity.getLon());
-
-//                     Optionally, remove location updates if you only need the location once
-                    locationManager.removeUpdates(this);
-
-                }
-
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-                @Override
-                public void onProviderEnabled(String provider) {}
-
-                @Override
-                public void onProviderDisabled(String provider) {}
-            });
-        } else {
-            // Request permission from the user
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("LocationEnabled", true)
+                        .apply();
+                // Permission was granted, start MainViewActivity
+                startActivity(new Intent(SettingsViewActivity.this, MainViewActivity.class));
+            } else {
+                locationSwitch.setChecked(false);
+                getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("LocationEnabled", false)
+                        .apply();
+                // Permission was denied, handle the case
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
