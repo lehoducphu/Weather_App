@@ -99,14 +99,18 @@ public class MainViewActivity extends AppCompatActivity {
         boolean firstStart = getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
                 .getBoolean("FirstStart", true);
 
-        locationEnabled = getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
+            locationEnabled = getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
                 .getBoolean("LocationEnabled", false);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-
+        // Get the intent that started this activity
         Intent intent = getIntent();
+
+        // Intent may contain the location data so we will get data in here
         boolean locationSelected = false;
+
+        // Check if the intent contains the location data
         if (!locationSelected) {
             // Check permission status and request if not granted
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -137,18 +141,15 @@ public class MainViewActivity extends AppCompatActivity {
 
         // Swipe to refresh feature
         swiperefresh.setOnRefreshListener(() -> {
-            // Check if location is enabled and location is not selected
-            if (locationEnabled&&!locationSelected) {
-                getCurrentLocationWeather();
-            }else {
+
                 // Call API to refresh content
                 getCurrentWeather(lat, lon, language, units, API_KEY);
                 getHourlyWeather(lat, lon, cnt, language, units, API_KEY);
-            }
+
             Log.i("Main", "onRefresh called from SwipeRefreshLayout");
         });
 
-        // Schedule weather refresh
+        // Schedule weather refresh (can be changed in settings view)
         scheduleWeatherRefresh();
 
 
@@ -169,7 +170,7 @@ public class MainViewActivity extends AppCompatActivity {
                     callTime = util.convertUnixToLocalDateTime(currentTimeMillis, ZoneId.systemDefault());
 
                     // Set view with the weather response info
-                    setCurrentView(weatherResponse);
+                    setCurrentWeatherView(weatherResponse);
                     Log.e("getCurrentWeather", "Request success");
                 } else {
                     Log.e("getCurrentWeather", "Request failed");
@@ -241,7 +242,7 @@ public class MainViewActivity extends AppCompatActivity {
         Log.v("Main", "initHourlyWeatherView called");
     }
 
-    public void setCurrentView(CurrentWeatherResponse weatherResponse) {
+    public void setCurrentWeatherView(CurrentWeatherResponse weatherResponse) {
 
         // Set button to open sidebar
         btnOpenSidebar.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
@@ -259,7 +260,10 @@ public class MainViewActivity extends AppCompatActivity {
         tvCityname.setText(weatherResponse.getName());
         tvTemperature.setText(String.valueOf(weatherResponse.getMain().getTemp() + "°"));
         tvDescription.setText(weatherResponse.getWeather().get(0).getDescription());
-        tvFeellike.setText(String.valueOf(weatherResponse.getMain().getFeelsLike()));
+//        tvFeellike.setText(String.valueOf(weatherResponse.getMain().getFeelsLike()));
+        tvFeellike.setText(lat+", "+lon);
+
+
 
         String imageUrl = "https://openweathermap.org/img/wn/"+weatherResponse.getWeather().get(0).getIcon()+"@2x.png";
         Picasso.get()
@@ -335,8 +339,8 @@ public class MainViewActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
-                    MainViewActivity.setLat(location.getLatitude());
 
+                    MainViewActivity.setLat(location.getLatitude());
                     MainViewActivity.setLon(location.getLongitude());
 
 
@@ -361,7 +365,10 @@ public class MainViewActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Check if the permission request is for location
         if (requestCode == REQUEST_LOCATION) {
+            // Check if the permission is granted if
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
                 // Set location enabled preference to true
