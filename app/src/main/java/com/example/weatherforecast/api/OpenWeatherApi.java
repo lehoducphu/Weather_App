@@ -32,13 +32,13 @@ public interface OpenWeatherApi {
             @Query("appid") String apiKey
     );
 
-        @GET("geo/1.0/reverse")
-        Call<List<City>> getCities(
-                @Query("lat") double lat,
-                @Query("lon") double lon,
-                @Query("limit") int limit,
-                @Query("appid") String apiKey
-        );
+    @GET("geo/1.0/reverse")
+    Call<List<City>> getCities(
+            @Query("lat") double lat,
+            @Query("lon") double lon,
+            @Query("limit") int limit,
+            @Query("appid") String apiKey
+    );
 
     @GET("data/2.5/forecast")
     Call<DailyWeatherResponse> getDailyWeather(
@@ -49,10 +49,6 @@ public interface OpenWeatherApi {
             @Query("units") String units,
             @Query("appid") String apiKey
     );
-
-
-
-
 
 
 }

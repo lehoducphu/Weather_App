@@ -336,9 +336,7 @@ public class MainViewActivity extends AppCompatActivity {
             public void onSuccess(Location location) {
                 if (location != null) {
                     MainViewActivity.setLat(location.getLatitude());
-
                     MainViewActivity.setLon(location.getLongitude());
-
 
                     Log.d("getCurrentLocationWeather", "Lat: " + MainViewActivity.getLat());
                     Log.d("getCurrentLocationWeather", "Lon: " + MainViewActivity.getLon());
