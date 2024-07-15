@@ -25,10 +25,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.weatherforecast.R;
+import com.example.weatherforecast.adapter.DrawerCityAdapter;
 import com.example.weatherforecast.adapter.HourlyWeatherAdapter;
 import com.example.weatherforecast.api.ApiClient;
+import com.example.weatherforecast.api.CityResponseCallback;
 import com.example.weatherforecast.api.OpenWeatherApi;
+import com.example.weatherforecast.model.geocoding.City;
 import com.example.weatherforecast.model.weather.CurrentWeatherResponse;
 import com.example.weatherforecast.model.weather.HourlyWeather;
 import com.example.weatherforecast.model.weather.HourlyWeatherResponse;
