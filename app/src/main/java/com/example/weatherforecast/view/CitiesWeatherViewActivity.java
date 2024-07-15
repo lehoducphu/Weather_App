@@ -71,6 +71,8 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
 
         // Set the drawer layout
         setDrawerLayout();
+
+        // Fetch the weather data for each city
         for(DbCity dbCity : dbCityList) {
             getCityWeather(dbCity.getLon(), dbCity.getLat(), 1, "vi", "metric", API_KEY);
         }

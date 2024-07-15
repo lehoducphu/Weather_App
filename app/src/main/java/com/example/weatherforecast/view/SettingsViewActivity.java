@@ -92,6 +92,7 @@ public class SettingsViewActivity extends AppCompatActivity {
         options.add("psi");
         options.add("inHg");
 
+
         ArrayAdapter adapter = new ArrayAdapter(this, R.layout.custom_spinner_layout, options);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         pressureSpinner.setAdapter(adapter);
@@ -99,6 +100,7 @@ public class SettingsViewActivity extends AppCompatActivity {
         // set item from shared preference to spinner
         String pressureUnit = getSharedPreferences("WeatherAppPreferences", MODE_PRIVATE)
                 .getString("pressureUnit", "mb");
+
         pressureSpinner.setSelection(adapter.getPosition(pressureUnit));
 
         pressureSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
