@@ -10,9 +10,12 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.weatherforecast.R;
-import com.example.weatherforecast.util.ConnectDbUtil;
+import com.example.weatherforecast.model.dbmodel.City;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,16 +46,11 @@ public class ExConnectDbView extends AppCompatActivity {
         myadapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mylist);
         lv.setAdapter(myadapter);
 
-//        // copy database from assets
-//        processCopy();
-//
-//        // open database
-//        database = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
+        // copy database from assets
+        processCopy();
 
-        ConnectDbUtil dbUtil = new ConnectDbUtil(this); // 'this' is the Activity context
-        dbUtil.processCopy();
-        SQLiteDatabase database = dbUtil.openDatabase();
-// Now you can use 'database' to query or perform database operations
+        // open database
+        database = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
 
         // query data
         Cursor c = database.rawQuery("SELECT * FROM city", null);
@@ -60,13 +58,13 @@ public class ExConnectDbView extends AppCompatActivity {
         c.moveToFirst();
 
         // get data
-//        while (c.isAfterLast() == false) {
-//            City city = new City(c.getInt(0), c.getString(1),
-//                    c.getDouble(2), c.getDouble(3));
-//
-//            mylist.add(city.toString());
-//            c.moveToNext();
-//        }
+        while (c.isAfterLast() == false) {
+            City city = new City(c.getInt(0), c.getString(1),
+                    c.getDouble(2), c.getDouble(3));
+
+            mylist.add(city.toString());
+            c.moveToNext();
+        }
         c.close();
         myadapter.notifyDataSetChanged();
 
@@ -74,7 +72,7 @@ public class ExConnectDbView extends AppCompatActivity {
 
     }
 
-    public void processCopy() {
+    private void processCopy() {
 //private app
         File dbFile = getDatabasePath(DATABASE_NAME);
         if (dbFile.exists()) {
@@ -89,7 +87,7 @@ public class ExConnectDbView extends AppCompatActivity {
         }
     }
 
-    public String getDatabasePath() {
+    private String getDatabasePath() {
         return getApplicationInfo().dataDir + DB_PATH_SUFFIX + DATABASE_NAME;
     }
 
