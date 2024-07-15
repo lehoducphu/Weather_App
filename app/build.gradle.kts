@@ -56,5 +56,6 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui:2.3.5")
     implementation ("com.google.android.gms:play-services-location:21.3.0")
     implementation ("com.squareup.picasso:picasso:2.8")
+    implementation("com.android.volley:volley:1.2.1")
 
 }
