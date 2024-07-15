@@ -148,17 +148,21 @@ public class MainViewActivity extends AppCompatActivity {
 
     public void getCurrentWeather(double lat, double lon, String language, String units, String apiKey) {
         OpenWeatherApi service = ApiClient.getClient().create(OpenWeatherApi.class);
+
+        // Call API
         Call<CurrentWeatherResponse> call = service.getCurrentWeather(lat, lon, language, tempUnit, apiKey);
+
         call.enqueue(new Callback<CurrentWeatherResponse>() {
             @Override
             public void onResponse(Call<CurrentWeatherResponse> call, Response<CurrentWeatherResponse> response) {
                 if (response.isSuccessful()) {
+
                     // get API response
                     weatherResponse = response.body();
 
                     // get response time
-                    long currentTimeMillis = System.currentTimeMillis() / 1000; // Convert to seconds
-                    callTime = util.convertUnixToLocalDateTime(currentTimeMillis, ZoneId.systemDefault());
+//                    long currentTimeMillis = System.currentTimeMillis() / 1000; // Convert to seconds
+//                    callTime = util.convertUnixToLocalDateTime(currentTimeMillis, ZoneId.systemDefault());
 
                     // Set view with the weather response info
                     setCurrentWeatherView(weatherResponse);
@@ -270,13 +274,16 @@ public class MainViewActivity extends AppCompatActivity {
     public void setCurrentWeatherView(CurrentWeatherResponse weatherResponse) {
 
         // set info from api to view
+        // set city name
         tvCityname.setText(weatherResponse.getName());
 
         // get temperature unit
         String weatherUnit = tempUnit.equals("metric") ? "°C" : "°F";
+
         // set temperature
         tvTemperature.setText(String.valueOf(Math.round(weatherResponse.getMain().getTemp()) + weatherUnit));
 
+        // set description
         tvDescription.setText(weatherResponse.getWeather().get(0).getDescription());
 
         String minMaxTemp = Math.round(weatherResponse.getMain().getTempMax()) + weatherUnit
@@ -293,8 +300,8 @@ public class MainViewActivity extends AppCompatActivity {
                 .load(imageUrl)
                 .into(ivWeatherIcon);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        Log.d("Weather", "Converted LocalDateTime: " + callTime.format(formatter));
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+//        Log.d("Weather", "Converted LocalDateTime: " + callTime.format(formatter));
 //        tvLastupdate.setText("" + callTime.format(formatter));
     }
 
@@ -730,6 +737,8 @@ public class MainViewActivity extends AppCompatActivity {
             // Get API response and store it in weatherResponse variable
             getCurrentWeather(lat, lon, language, tempUnit, API_KEY);
             getHourlyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+
+
             getAQI(lat, lon, API_KEY);
             getExtraWeatherInfo(lat, lon, language, tempUnit, API_KEY);
         }
