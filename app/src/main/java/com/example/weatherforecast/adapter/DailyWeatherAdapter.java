@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weatherforecast.R;
 import com.example.weatherforecast.model.weather.DailyWeather;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -33,9 +34,13 @@ public class DailyWeatherAdapter extends RecyclerView.Adapter<DailyWeatherAdapte
         DailyWeather forecast = forecastList.get(position);
         holder.tvDay.setText(forecast.getDay());
         holder.tvDate.setText(forecast.getDate());
-        holder.ivWeatherIcon.setImageResource(forecast.getWeatherIcon());
-        holder.tvTemp.setText(forecast.getTemp());
-        holder.tvPrecipitation.setText(forecast.getPrecipitation());
+        String imageUrl = "https://openweathermap.org/img/wn/"+forecast.getWeatherIcon()+"@2x.png";
+        Picasso.get()
+                .load(imageUrl)
+                .into(holder.ivWeatherIcon);
+
+        holder.tvTemp.setText(Integer.toString(forecast.getTemp()) + "°");
+        holder.tvPrecipitation.setText(forecast.getHumidity() + "%");
     }
 
     @Override

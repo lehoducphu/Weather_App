@@ -3,24 +3,27 @@ package com.example.weatherforecast.model.weather;
 public class DailyWeather {
     private String day;
     private String date;
-    private int weatherIcon;
-    private String temp;
-    private String precipitation;
+    private String weatherIcon;
+    private int temp;
+    private String humidity;
 
-    public DailyWeather(String day, String date, int weatherIcon, String temp, String precipitation) {
+    public DailyWeather() {
+    }
+
+    public DailyWeather(String day, String date, String weatherIcon, int temp, String humidity) {
         this.day = day;
         this.date = date;
         this.weatherIcon = weatherIcon;
         this.temp = temp;
-        this.precipitation = precipitation;
+        this.humidity = humidity;
     }
 
     // Getters
     public String getDay() { return day; }
     public String getDate() { return date; }
-    public int getWeatherIcon() { return weatherIcon; }
-    public String getTemp() { return temp; }
-    public String getPrecipitation() { return precipitation; }
+    public String getWeatherIcon() { return weatherIcon; }
+    public int getTemp() { return temp; }
+    public String getHumidity() { return humidity; }
 
     public void setDay(String day) {
         this.day = day;
@@ -30,15 +33,15 @@ public class DailyWeather {
         this.date = date;
     }
 
-    public void setWeatherIcon(int weatherIcon) {
+    public void setWeatherIcon(String weatherIcon) {
         this.weatherIcon = weatherIcon;
     }
 
-    public void setTemp(String temp) {
+    public void setTemp(int temp) {
         this.temp = temp;
     }
 
-    public void setPrecipitation(String precipitation) {
-        this.precipitation = precipitation;
+    public void setHumidity(String humidity) {
+        this.humidity = humidity;
     }
 }

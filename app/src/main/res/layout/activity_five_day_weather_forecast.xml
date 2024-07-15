@@ -89,5 +89,11 @@
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
+    <Button
+        android:id="@+id/notify_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Notification"
+        android:layout_centerInParent="true" />
 
 </LinearLayout>
