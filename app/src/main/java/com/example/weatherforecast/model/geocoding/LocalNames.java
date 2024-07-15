@@ -1,7 +1,6 @@
-package com.example.weatherforecast.model.geographic;
+package com.example.weatherforecast.model.geocoding;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.Map;
 
 public class LocalNames {
     @SerializedName("ar")

@@ -58,5 +58,6 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.3.0")
     implementation ("com.squareup.picasso:picasso:2.8")
     implementation ("com.google.android.material:material:1.13.0-alpha04")
+    implementation("com.android.volley:volley:1.2.1")
 
 }

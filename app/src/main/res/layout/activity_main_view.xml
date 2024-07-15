@@ -16,6 +16,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+
+
             <!-- The main content view -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -47,6 +49,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="27°"
+                                android:textColor="#FFFFFF"
                                 android:textSize="48sp" />
 
                             <TextView
@@ -56,6 +59,7 @@
                                 android:text="Một phần có mây"
                                 android:layout_below="@id/tvTemperature"
                                 android:layout_marginTop="8dp"
+                                android:textColor="#FFFFFF"
                                 android:textSize="18sp" />
 
                             <TextView
@@ -65,6 +69,8 @@
                                 android:text="Cảm giác như 32"
                                 android:layout_below="@id/tvDescription"
                                 android:layout_marginTop="8dp"
+                                android:textColor="#FFFFFF"
+
                                 android:textSize="18sp" />
 
                             <ImageView
@@ -109,8 +115,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="AQI"
                                 android:textColor="#FFFFFF"
-                                android:textSize="24sp"
-                                android:textStyle="bold" />
+                                android:textSize="18sp" />
 
                             <TextView
                                 android:id="@+id/aqi_value"
@@ -125,7 +130,7 @@
                                 android:id="@+id/aqi_status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Không tốt cho sức khỏe"
+                                android:text=""
                                 android:textColor="#FFFFFF"
                                 android:textSize="16sp" />
                         </LinearLayout>
@@ -249,16 +254,16 @@
                             </LinearLayout>
                         </GridLayout>
 
-                        <!-- Phần Độ che phủ mây và Lượng mưa -->
+                        <!-- Bình minh và hoàng hôn -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
                             android:background="@android:color/transparent"
                             android:orientation="horizontal"
-                            android:padding="16dp">
+                            android:padding="16dp"> <!-- Nền trong suốt -->
 
-                            <!-- Độ che phủ mây -->
+                            <!-- Bình minh -->
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -271,9 +276,9 @@
                                     android:id="@+id/sunrise_label"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Độ che phủ mây"
+                                    android:text="Bình minh"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="16sp" />
+                                    android:textSize="16sp" /> <!-- Màu chữ trắng -->
 
                                 <TextView
                                     android:id="@+id/sunrise_value"
@@ -282,10 +287,10 @@
                                     android:text="04:42"
                                     android:textColor="#FFFFFF"
                                     android:textSize="16sp"
-                                    android:textStyle="bold" />
+                                    android:textStyle="bold" /> <!-- Màu chữ trắng -->
                             </LinearLayout>
 
-                            <!-- Lượng mưa -->
+                            <!-- hoàng hôn -->
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -298,9 +303,9 @@
                                     android:id="@+id/sunset_label"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Lượng mưa"
+                                    android:text="Hoàng hôn"
                                     android:textColor="#FFFFFF"
-                                    android:textSize="16sp" />
+                                    android:textSize="16sp" /> <!-- Màu chữ trắng -->
 
                                 <TextView
                                     android:id="@+id/sunset_value"
@@ -309,36 +314,10 @@
                                     android:text="04:42"
                                     android:textColor="#FFFFFF"
                                     android:textSize="16sp"
-                                    android:textStyle="bold" />
+                                    android:textStyle="bold" /> <!-- Màu chữ trắng -->
                             </LinearLayout>
                         </LinearLayout>
 
-                        <!-- Phần dự báo thời tiết -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:background="@android:color/transparent"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:id="@+id/forecast_label"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Dự báo thời tiết"
-                                android:textColor="#FFFFFF"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/forecast_value"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Ngày mai: Nắng, nhiệt độ từ 25-30°C"
-                                android:textColor="#FFFFFF"
-                                android:textSize="16sp" />
-                        </LinearLayout>
                     </LinearLayout>
 
                 </androidx.core.widget.NestedScrollView>
@@ -350,7 +329,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
-                app:menu="@menu/drawer_view" />
+                android:fitsSystemWindows="true"
+                app:headerLayout="@layout/drawer_custom_view" />
 
         </androidx.drawerlayout.widget.DrawerLayout>
     </RelativeLayout>
