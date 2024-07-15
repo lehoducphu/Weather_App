@@ -17,12 +17,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherForecast"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".view.LocationManagementViewActivity"
+            android:exported="false" />
         <activity
             android:name=".view.ExConnectDbView"
             android:exported="false" />
         <activity
-            android:name=".view.FiveDayWeatherView"
+            android:name=".view.MainViewActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +36,7 @@
         </activity>
         <activity android:name=".view.SettingsViewActivity" />
         <activity android:name=".view.CitiesWeatherViewActivity" />
+        <activity android:name=".view.SearchCityViewActivity" />
         <receiver android:name=".widget.WeatherWidget"
             android:exported="true">
             <intent-filter>

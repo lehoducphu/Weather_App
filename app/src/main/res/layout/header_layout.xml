@@ -11,6 +11,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_weight="1"
+        app:tint="#FFFFFF"
         app:srcCompat="@drawable/icons8_menu"
         android:background="@android:color/transparent"/>
     <TextView
@@ -20,12 +21,12 @@
         android:layout_weight="1"
         android:text="City Name"
         android:layout_gravity="center_vertical"
-        android:textSize="30sp"
+        android:textSize="22sp"
         android:paddingStart="16dp"
-        android:textColor="#000000"
         android:layout_column="1"
         android:layout_row="0"
         android:layout_columnSpan="2"
+        android:textColor="#FFFFFF"
         />
 
 </GridLayout>
