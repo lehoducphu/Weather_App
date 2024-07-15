@@ -17,4 +17,7 @@
         <item>Every hour</item>
         <item>Every 3 hours</item>
     </string-array>
+
+    <string name="channel_name">Caothuludau</string>
+    <string name="channel_description">Is showing notification</string>
 </resources>

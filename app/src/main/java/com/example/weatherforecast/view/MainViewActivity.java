@@ -31,14 +31,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.weatherforecast.R;
-import com.example.weatherforecast.adapter.CityAdapter;
-import com.example.weatherforecast.adapter.CityWeatherAdapter;
 import com.example.weatherforecast.adapter.DrawerCityAdapter;
 import com.example.weatherforecast.adapter.HourlyWeatherAdapter;
 import com.example.weatherforecast.api.ApiClient;
 import com.example.weatherforecast.api.CityResponseCallback;
 import com.example.weatherforecast.api.OpenWeatherApi;
-import com.example.weatherforecast.model.dbmodel.DbCity;
 import com.example.weatherforecast.model.geocoding.City;
 import com.example.weatherforecast.model.weather.CurrentWeatherResponse;
 import com.example.weatherforecast.model.weather.HourlyWeather;
@@ -402,7 +399,7 @@ public class MainViewActivity extends AppCompatActivity {
 
         // check if access location permission is granted
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED ){
             // Request permission from the user
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
             return;
