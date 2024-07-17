@@ -82,4 +82,108 @@ public class LocalNames {
     private String zu;
 
     // Getters and setters
+
+    public String getAr() {
+        return ar;
+    }
+
+    public String getAscii() {
+        return ascii;
+    }
+
+    public String getBg() {
+        return bg;
+    }
+
+    public String getCa() {
+        return ca;
+    }
+
+    public String getDe() {
+        return de;
+    }
+
+    public String getEl() {
+        return el;
+    }
+
+    public String getEn() {
+        return en;
+    }
+
+    public String getFa() {
+        return fa;
+    }
+
+    public String getFeatureName() {
+        return featureName;
+    }
+
+    public String getFi() {
+        return fi;
+    }
+
+    public String getFr() {
+        return fr;
+    }
+
+    public String getGl() {
+        return gl;
+    }
+
+    public String getHe() {
+        return he;
+    }
+
+    public String getHi() {
+        return hi;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getIt() {
+        return it;
+    }
+
+    public String getJa() {
+        return ja;
+    }
+
+    public String getLa() {
+        return la;
+    }
+
+    public String getLt() {
+        return lt;
+    }
+
+    public String getPt() {
+        return pt;
+    }
+
+    public String getRu() {
+        return ru;
+    }
+
+    public String getSr() {
+        return sr;
+    }
+
+    public String getTh() {
+        return th;
+    }
+
+    public String getTr() {
+        return tr;
+    }
+
+    public String getVi() {
+        return vi;
+    }
+
+    public String getZu() {
+        return zu;
+    }
 }

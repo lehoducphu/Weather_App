@@ -1,8 +1,13 @@
 package com.example.weatherforecast.view;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +23,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -31,16 +38,23 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.weatherforecast.R;
+import com.example.weatherforecast.adapter.DailyWeatherAdapter;
 import com.example.weatherforecast.adapter.DrawerCityAdapter;
 import com.example.weatherforecast.adapter.HourlyWeatherAdapter;
 import com.example.weatherforecast.api.ApiClient;
 import com.example.weatherforecast.api.CityResponseCallback;
 import com.example.weatherforecast.api.OpenWeatherApi;
+import com.example.weatherforecast.model.dbmodel.DbCity;
 import com.example.weatherforecast.model.geocoding.City;
 import com.example.weatherforecast.model.weather.CurrentWeatherResponse;
+import com.example.weatherforecast.model.weather.DailyWeather;
+import com.example.weatherforecast.model.weather.DailyWeatherResponse;
 import com.example.weatherforecast.model.weather.HourlyWeather;
 import com.example.weatherforecast.model.weather.HourlyWeatherResponse;
 import com.example.weatherforecast.model.weather.WeatherList;
+import com.example.weatherforecast.notification.DailyNotification;
+import com.example.weatherforecast.notification.NotificationReceiver;
+import com.example.weatherforecast.util.ConnectDbUtil;
 import com.example.weatherforecast.util.util;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -60,6 +74,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -78,11 +93,20 @@ public class MainViewActivity extends AppCompatActivity {
     private static String speedUnit = "km/h";
     private static String pressureUnit = "mb";
 
+
     private static String language = "vi";
-    private static int cnt = 10;
+    private static int hourlyCnt = 10;
     private List<HourlyWeather> hourlyWeatherList;
-    private List<City> userCityList;
+    private List<DbCity> userCityList;
     private DrawerCityAdapter drawerCityAdapter;
+
+
+    private static int cnt = 50;
+    String targetTime = "09:00:00"; // Target time to filter data
+    private List<DailyWeather> dailyWeatherList;
+    private DailyWeatherAdapter dailyWeatherAdapter;
+    private RecyclerView recyclerViewDaily;
+    List<String> addedDays = new ArrayList<>();
 
 
     private static boolean locationEnabled = false;
@@ -134,11 +158,15 @@ public class MainViewActivity extends AppCompatActivity {
         initDrawerLayout();
         initCurrentWeatherView();
         initHourlyWeatherView();
+        initDailyWeather();
         initExtraWeatherInfo();
+
 
         // Set drawer layout
         setDrawerLayout();
 
+        // setup weather notification
+//        notifyDailyWeather();
 
     }
 
@@ -183,7 +211,7 @@ public class MainViewActivity extends AppCompatActivity {
     public void getHourlyWeather(double lat, double lon, int cnt, String language, String units, String apiKey) {
 
         OpenWeatherApi service = ApiClient.getClient().create(OpenWeatherApi.class);
-        Call<HourlyWeatherResponse> call = service.getHourlyWeather(lat, lon, 10, language, tempUnit, apiKey);
+        Call<HourlyWeatherResponse> call = service.getHourlyWeather(lat, lon, 10, language, units, apiKey);
 
         call.enqueue(new Callback<HourlyWeatherResponse>() {
             @Override
@@ -208,6 +236,112 @@ public class MainViewActivity extends AppCompatActivity {
                 swiperefresh.setRefreshing(false);
             }
         });
+    }
+
+    private void fetchDailyWeather(double lat, double lon, int cnt, String language, String units, String apiKey) {
+        OpenWeatherApi apiService = ApiClient.getClient().create(OpenWeatherApi.class);
+        Call<DailyWeatherResponse> call = apiService.getDailyWeather(lat, lon, cnt, language, units, apiKey);
+
+        call.enqueue(new Callback<DailyWeatherResponse>() {
+            @Override
+            public void onResponse(Call<DailyWeatherResponse> call, Response<DailyWeatherResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    setDailyWeatherView(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DailyWeatherResponse> call, Throwable t) {
+                Log.e("Error", t.getMessage());
+            }
+        });
+    }
+
+    private void setDailyWeatherView(DailyWeatherResponse response) {
+        dailyWeatherList.clear();
+
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEE                                                                                                                                                                     ", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM", Locale.getDefault());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+
+        for (WeatherList weatherData : response.getList()) {
+            try {
+                Date date = inputFormat.parse(weatherData.getDtTxt());
+                String day = dayFormat.format(date);
+                String dateFormatted = dateFormat.format(date);
+                String time = timeFormat.format(date);
+
+                if (time.equals(targetTime) && !addedDays.contains(dateFormatted)) {
+                    dailyWeatherList.add(new DailyWeather(
+                            day,
+                            dateFormatted,
+                            weatherData.getWeather().get(0).getIcon(),
+                            (int) weatherData.getMain().getTemp(),
+                            Integer.toString(weatherData.getMain().getHumidity())
+                    ));
+                    addedDays.add(dateFormatted);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            dailyWeatherAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void notifyDailyWeather() {
+        DailyNotification dailyNotification = new DailyNotification(this);
+        dailyNotification.createNotificationChannel();
+
+        // Find the button and set an OnClickListener to trigger the notification
+        Button notifyButton = findViewById(R.id.notify_button);
+        notifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendNotification();  // Call the method to send the notification
+            }
+        });
+    }
+
+    private void scheduleNotification() {
+        Intent intent = new Intent(this, NotificationReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        long interval = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+        // Cancel any existing alarms to avoid duplicates
+        alarmManager.cancel(pendingIntent);
+
+        // Set a repeating alarm that triggers every 5 minutes
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
+    }
+
+    private void sendNotification() {
+        Intent intent = new Intent(this, FiveDayWeatherView.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Caothuludau")
+                .setSmallIcon(R.drawable.weather_clear_day)
+                .setContentTitle("Example Notification")
+                .setContentText("This is an example notification")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        notificationManager.notify(1, builder.build());
     }
 
     public void initCurrentWeatherView() {
@@ -239,9 +373,8 @@ public class MainViewActivity extends AppCompatActivity {
         // Ensure the navigation view has been properly initialized
         View headerView = navigationView.getHeaderView(0); // Assuming the buttons are in the header
 
-        userCityList = new ArrayList<>();
-        userCityList.add(new City("Hà Nội", 21.0285, 105.8542, "VN", null));
-        userCityList.add(new City("Hồ Chí Minh", 10.762622, 106.660172, "VN", null));
+        // get user city list from database
+        userCityList = util.getUserSavedcities(this);
 
         if (headerView != null) {
             navSearchButton = headerView.findViewById(R.id.nav_search);
@@ -254,6 +387,15 @@ public class MainViewActivity extends AppCompatActivity {
 
         btnOpenSidebar = findViewById(R.id.btnOpenSidebar);
     }
+
+    private void initDailyWeather() {
+        dailyWeatherList = new ArrayList<>();
+        recyclerViewDaily = findViewById(R.id.recyclerViewDaily);
+        recyclerViewDaily.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        dailyWeatherAdapter = new DailyWeatherAdapter(dailyWeatherList);
+        recyclerViewDaily.setAdapter(dailyWeatherAdapter);
+    }
+
 
     private void initExtraWeatherInfo() {
         aqi_label = findViewById(R.id.aqi_label);
@@ -272,7 +414,10 @@ public class MainViewActivity extends AppCompatActivity {
 
         // set info from api to view
         // set city name
-        tvCityname.setText(weatherResponse.getName());
+        // get city name in vn
+        String city = currentCity.getLocalNames().getVi() != null ?
+                currentCity.getLocalNames().getVi() : currentCity.getName();
+        tvCityname.setText(city);
 
         // get temperature unit
         String weatherUnit = tempUnit.equals("metric") ? "°C" : "°F";
@@ -311,7 +456,7 @@ public class MainViewActivity extends AppCompatActivity {
             // get temperature unit
             String weatherUnit = tempUnit.equals("metric") ? "°C" : "°F";
             hourlyWeather.setTemp(Math.round(forecast.getMain().getTemp()));
-            hourlyWeather.setDescription(forecast.getWeather().get(0).getDescription());
+            hourlyWeather.setDescription(forecast.getMain().getHumidity() + "%");
             hourlyWeather.setIcon(forecast.getWeather().get(0).getIcon());
             hourlyWeather.setTime(forecast.getDtTxt().split(" ")[1]);
             hourlyWeatherList.add(hourlyWeather);
@@ -324,8 +469,11 @@ public class MainViewActivity extends AppCompatActivity {
 
         if (navSearchButton != null) {
             navSearchButton.setOnClickListener(v -> {
-                startActivity(new Intent(MainViewActivity.this, SearchCityViewActivity.class));
+                Intent intent = new Intent(new Intent(MainViewActivity.this, SearchCityViewActivity.class));
+                intent.putExtra("fromActivity", "main");
+                startActivity(intent);
                 drawerLayout.closeDrawer(GravityCompat.START);
+                finish();
             });
         } else {
             Log.e("CitiesWeatherViewActivity", "navSearchButton is null");
@@ -345,11 +493,23 @@ public class MainViewActivity extends AppCompatActivity {
             Log.e("MainViewActivity", "lvcity is null");
         } else {
             lvcity.setLayoutManager(new LinearLayoutManager(this));
-             drawerCityAdapter = new DrawerCityAdapter(userCityList);
-             lvcity.setAdapter(drawerCityAdapter);
+            drawerCityAdapter = new DrawerCityAdapter(this, userCityList, new DrawerCityAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    DbCity city = userCityList.get(position);
+                    Intent intent = new Intent(MainViewActivity.this, MainViewActivity.class);
+                    intent.putExtra("locationSelected", true);
+                    intent.putExtra("cityName", city.getName());
+                    intent.putExtra("lon", city.getLon());
+                    intent.putExtra("lat", city.getLat());
+                    startActivity(intent);
+                    finish();
+                }
+            });
+            lvcity.setAdapter(drawerCityAdapter);
         }
 
-        if(citymngbtn != null) {
+        if (citymngbtn != null) {
             citymngbtn.setOnClickListener(v -> {
                 startActivity(new Intent(MainViewActivity.this, LocationManagementViewActivity.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
@@ -372,6 +532,18 @@ public class MainViewActivity extends AppCompatActivity {
             case 2: // Every 3 hours
                 delayMillis = 10800000;
                 break;
+            case 3: // Every 6 hours
+                delayMillis = 21600000;
+                break;
+
+            case 4: // Every 12 hours
+                delayMillis = 43200000;
+                break;
+
+            case 5: // Every 24 hours
+                delayMillis = 86400000;
+                break;
+
             case 0: // Do not automatically refresh
             default:
                 handler.removeCallbacks(refreshRunnable);
@@ -386,7 +558,12 @@ public class MainViewActivity extends AppCompatActivity {
         refreshRunnable = new Runnable() {
             @Override
             public void run() {
-                getCurrentWeather(lat, lon, language, "metric", API_KEY);
+                getCurrentWeather(lat, lon, language, tempUnit, API_KEY);
+                getHourlyWeather(lat, lon, hourlyCnt, language, tempUnit, API_KEY);
+                fetchDailyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+                getAQI(lat, lon, API_KEY);
+                getExtraWeatherInfo(lat, lon, language, tempUnit, API_KEY);
+
                 handler.postDelayed(this, finalDelayMillis);
             }
         };
@@ -399,7 +576,7 @@ public class MainViewActivity extends AppCompatActivity {
 
         // check if access location permission is granted
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED ){
+                != PackageManager.PERMISSION_GRANTED) {
             // Request permission from the user
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
             return;
@@ -427,7 +604,10 @@ public class MainViewActivity extends AppCompatActivity {
                                 getCurrentWeather(lat, lon, language, tempUnit, API_KEY);
 
                                 // Get Hourly Weather Forecast
-                                getHourlyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+                                getHourlyWeather(lat, lon, hourlyCnt, language, tempUnit, API_KEY);
+
+                                // get daily weather
+                                fetchDailyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
 
                                 // Get extra weather info
                                 getAQI(lat, lon, API_KEY);
@@ -726,18 +906,40 @@ public class MainViewActivity extends AppCompatActivity {
             }
         } else {
             Log.e("MainViewActivity", "Location selected");
+            String cityName = intent.getStringExtra("cityName");
             //get latitude of selected location
             lat = intent.getDoubleExtra("lat", 1);
             //get longitude of selected location
             lon = intent.getDoubleExtra("lon", 1);
 
-            // Get API response and store it in weatherResponse variable
-            getCurrentWeather(lat, lon, language, tempUnit, API_KEY);
-            getHourlyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+            getCityResponseByReverse(lat, lon, 1, API_KEY, new CityResponseCallback() {
+                @Override
+                public void onCityResponseReceived(City city) {
+                    if (city != null) {
+                        currentCity = city;
+                        currentCity.setName(cityName);
+                        MainViewActivity.setLat(currentCity.getLat());
+                        MainViewActivity.setLon(currentCity.getLon());
 
+                        // Get API response and store it in weatherResponse variable
+                        getCurrentWeather(lat, lon, language, tempUnit, API_KEY);
 
-            getAQI(lat, lon, API_KEY);
-            getExtraWeatherInfo(lat, lon, language, tempUnit, API_KEY);
+                        // Get Hourly Weather Forecast
+                        getHourlyWeather(lat, lon, hourlyCnt, language, tempUnit, API_KEY);
+
+                        // get daily weather
+                        fetchDailyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+
+                        // Get extra weather info
+                        getAQI(lat, lon, API_KEY);
+                        getExtraWeatherInfo(lat, lon, language, tempUnit, API_KEY);
+
+                        Log.d("getSelectedLocationWeather", "get current Weather success");
+
+                    }
+                }
+            });
+
         }
 
 
@@ -758,7 +960,9 @@ public class MainViewActivity extends AppCompatActivity {
 
             // Call API to refresh content
             getCurrentWeather(lat, lon, language, tempUnit, API_KEY);
-            getHourlyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+            getHourlyWeather(lat, lon, hourlyCnt, language, tempUnit, API_KEY);
+            fetchDailyWeather(lat, lon, cnt, language, tempUnit, API_KEY);
+            getAQI(lat, lon, API_KEY);
             getExtraWeatherInfo(lat, lon, language, tempUnit, API_KEY);
 
             Log.i("Main", "onRefresh called from SwipeRefreshLayout");

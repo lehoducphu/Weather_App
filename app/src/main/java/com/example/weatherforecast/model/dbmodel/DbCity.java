@@ -12,6 +12,14 @@ public class DbCity {
 
     private String state;
 
+    public DbCity(String name, double lon, double lat, String country, String state) {
+        this.name = name;
+        this.lon = lon;
+        this.lat = lat;
+        this.country = country;
+        this.state = state;
+    }
+
     public DbCity(int id, String name, double lon, double lat, String country, String state) {
         this.id = id;
         this.name = name;

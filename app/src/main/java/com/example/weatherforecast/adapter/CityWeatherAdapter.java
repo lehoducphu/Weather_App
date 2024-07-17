@@ -11,10 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weatherforecast.R;
 import com.example.weatherforecast.model.weather.CityWeather;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class CityWeatherAdapter extends RecyclerView.Adapter<CityWeatherAdapter.WeatherViewHolder>{
+public class CityWeatherAdapter extends RecyclerView.Adapter<CityWeatherAdapter.WeatherViewHolder> {
     private List<CityWeather> dailyWeatherList;
     private final OnWeatherItemClickListener onWeatherItemClickListener;
 
@@ -40,8 +41,12 @@ public class CityWeatherAdapter extends RecyclerView.Adapter<CityWeatherAdapter.
         holder.tvTemperature.setText(String.format("%s°", Math.round(dailyWeather.getTemp())));
         holder.tvCity.setText(dailyWeather.getCity());
         holder.tvDescription.setText(dailyWeather.getDescription());
-        holder.tvTempRange.setText(String.format("H: %s° L: %s°",Math.round( dailyWeather.getTemp_max()), Math.round(dailyWeather.getTemp_min())));
-        // Load weather icon using a library like Picasso or Glide
+        holder.tvTempRange.setText(String.format("H: %s° L: %s°", Math.round(dailyWeather.getTemp_max()), Math.round(dailyWeather.getTemp_min())));
+
+        String imageUrl = "https://openweathermap.org/img/wn/" + dailyWeather.getIcon() + "@2x.png";
+        Picasso.get().load(imageUrl).into(holder.ivWeatherIcon);
+
+
         holder.itemView.setOnClickListener(v -> onWeatherItemClickListener.onWeatherItemClick(dailyWeather));
     }
 
