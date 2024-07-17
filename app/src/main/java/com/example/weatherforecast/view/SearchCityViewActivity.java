@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +17,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.weatherforecast.R;
 import com.example.weatherforecast.adapter.CityAdapter;
 import com.example.weatherforecast.api.OpenWeatherApi;
+import com.example.weatherforecast.model.dbmodel.DbCity;
 import com.example.weatherforecast.model.geocoding.City;
+import com.example.weatherforecast.util.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +35,10 @@ public class SearchCityViewActivity extends AppCompatActivity {
     private EditText editTextCity;
     private ListView listViewCities;
     private CityAdapter cityAdapter;
+
     private List<City> cityList;
+    private List<DbCity> userCityList;
+
     private ImageButton backBtn;
 
     private String apiKey = MainViewActivity.API_KEY; // Replace with your OpenWeatherMap API key
@@ -46,10 +52,18 @@ public class SearchCityViewActivity extends AppCompatActivity {
         editTextCity = findViewById(R.id.editTextCity);
         listViewCities = findViewById(R.id.listViewCities);
 
+        // get user city list from database
+        userCityList = util.getUserSavedcities(this);
+
         // set adapter
         cityList = new ArrayList<>();
         cityAdapter = new CityAdapter(this, cityList);
         listViewCities.setAdapter(cityAdapter);
+
+        // get intent to know if user is coming from main view or LocationManagementViewActivity
+        Intent intent = getIntent();
+        String fromActivity = intent.getStringExtra("fromActivity");
+
 
         // set event to EditText so that every time user input a char, get list of cities
         editTextCity.addTextChangedListener(new TextWatcher() {
@@ -70,11 +84,52 @@ public class SearchCityViewActivity extends AppCompatActivity {
         listViewCities.setOnItemClickListener((parent, view, position, id) -> {
             City selectedCity = cityAdapter.getItem(position);
             if (selectedCity != null) {
-                Intent intent = new Intent(SearchCityViewActivity.this, MainViewActivity.class);
-                intent.putExtra("locationSelected", true);
-                intent.putExtra("lat", selectedCity.getLat());
-                intent.putExtra("lon", selectedCity.getLon());
-                startActivity(intent);
+                // check if user is coming from main or management view
+                if(fromActivity.equals("main")) {
+                    // get vi name
+                    String cityName = selectedCity.getLocalNames().getVi()!=null?
+                            selectedCity.getLocalNames().getVi() : selectedCity.getName();
+
+                    // add to database
+                    //check if city is already saved
+                    if(!checkCityIsInList(selectedCity)){
+                        util.addCity(SearchCityViewActivity.this, cityName,
+                                selectedCity.getLon(), selectedCity.getLat(), selectedCity.getCountry(),
+                                selectedCity.getState());
+                        Toast.makeText(SearchCityViewActivity.this, "Location saved",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    // send intent to main view
+                    Intent sendIntent = new Intent(SearchCityViewActivity.this,
+                            MainViewActivity.class);
+                    sendIntent.putExtra("locationSelected", true);
+                    sendIntent.putExtra("cityName", cityName);
+                    sendIntent.putExtra("lat", selectedCity.getLat());
+                    sendIntent.putExtra("lon", selectedCity.getLon());
+                    startActivity(sendIntent);
+                }else{
+                    // get vi name
+                    String cityName = selectedCity.getLocalNames().getVi()!=null?
+                            selectedCity.getLocalNames().getVi() : selectedCity.getName();
+
+                    // add to database
+                    if(!checkCityIsInList(selectedCity)){
+                        util.addCity(SearchCityViewActivity.this, cityName,
+                                selectedCity.getLon(), selectedCity.getLat(), selectedCity.getCountry(),
+                                selectedCity.getState());
+                        Toast.makeText(SearchCityViewActivity.this, "Location saved",
+                                Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(SearchCityViewActivity.this, "Location already saved",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+//                    // send intent to management view
+                    Intent sendIntent = new Intent(SearchCityViewActivity.this,
+                            LocationManagementViewActivity.class);
+                    startActivity(sendIntent);
+                }
             }
         });
 
@@ -114,5 +169,16 @@ public class SearchCityViewActivity extends AppCompatActivity {
                 // Handle failure
             }
         });
+    }
+
+    public boolean checkCityIsInList(City city){
+        for(DbCity dbCity : userCityList){
+            if(dbCity.getLat()==city.getLat()
+                    && dbCity.getLon()==city.getLon()){
+
+                return true;
+            }
+        }
+        return false;
     }
 }

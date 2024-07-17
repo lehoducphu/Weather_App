@@ -13,29 +13,36 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weatherforecast.R;
+import com.example.weatherforecast.model.dbmodel.DbCity;
 import com.example.weatherforecast.model.geocoding.City;
 import com.example.weatherforecast.model.weather.CityWeather;
 
 import java.util.List;
 
 public class CityMgtAdapter extends RecyclerView.Adapter<CityMgtAdapter.CityViewHolder> {
-    private List<City> cityList;
+    private List<DbCity> cityList;
     private Context context;
     private OnItemLongClickListener longClickListener;
+    private OnItemClickListener clickListener;
 
-    public CityMgtAdapter(Context context, List<City> cityList, OnItemLongClickListener longClickListener) {
+    public CityMgtAdapter(Context context, List<DbCity> cityList, OnItemClickListener clickListener, OnItemLongClickListener longClickListener) {
         this.context = context;
         this.cityList = cityList;
         this.longClickListener = longClickListener;
+        this.clickListener = clickListener;
     }
 
     public interface OnItemLongClickListener {
         void onItemLongClick(View view, int position);
     }
 
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
+    }
 
 
-    public CityMgtAdapter(List<City> cityList) {
+
+    public CityMgtAdapter(List<DbCity> cityList) {
         this.cityList = cityList;
     }
 
@@ -50,7 +57,7 @@ public class CityMgtAdapter extends RecyclerView.Adapter<CityMgtAdapter.CityView
 
     @Override
     public void onBindViewHolder(@NonNull CityViewHolder holder, int position) {
-        City city = cityList.get(position);
+        DbCity city = cityList.get(position);
 
         holder.tvcityname.setText(city.getName());
 
@@ -67,6 +74,12 @@ public class CityMgtAdapter extends RecyclerView.Adapter<CityMgtAdapter.CityView
                 return true;
             }
             return false;
+        });
+
+        holder.itemView.setOnClickListener(view -> {
+            if (clickListener != null) {
+                clickListener.onItemClick(view, position);
+            }
         });
     }
 

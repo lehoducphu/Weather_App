@@ -6,7 +6,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,13 +22,16 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.weatherforecast.R;
 import com.example.weatherforecast.adapter.CityWeatherAdapter;
+import com.example.weatherforecast.adapter.DrawerCityAdapter;
 import com.example.weatherforecast.api.ApiClient;
 import com.example.weatherforecast.api.OpenWeatherApi;
 import com.example.weatherforecast.model.dbmodel.DbCity;
+import com.example.weatherforecast.model.weather.City;
 import com.example.weatherforecast.model.weather.CityWeather;
 import com.example.weatherforecast.model.weather.HourlyWeatherResponse;
 import com.example.weatherforecast.model.weather.WeatherList;
 import com.example.weatherforecast.util.ConnectDbUtil;
+import com.example.weatherforecast.util.util;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -41,6 +46,7 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private CityWeatherAdapter weatherAdapter;
     private List<CityWeather> cityWeatherList = new ArrayList<>();
+    private List<DbCity> userCityList;
     private HourlyWeatherResponse hourlyWeatherResponse; // Member variable to store the hourly weather response
 
     private static final String API_KEY = "de13238c0859cbbf9d42bacb340bbe2c"; // Replace with your API key
@@ -54,6 +60,11 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
     private TextView tvcityname;
     private ImageButton navSearchButton;
     private ImageButton navSettingsButton;
+    private RecyclerView lvcity;
+    private Button citymngbtn;
+    private DrawerCityAdapter drawerCityAdapter;
+
+
 
 
     @Override
@@ -66,22 +77,29 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
         initCityWeatherView();
         initDrawerLayout();
 
+        cityWeatherList = new ArrayList<>(); // Ensure this list is initialized before setting the adapter
+        weatherAdapter = new CityWeatherAdapter(cityWeatherList, this::onWeatherItemClick);
+        recyclerView.setAdapter(weatherAdapter); // Set the adapter early
+
+
         // get user saved city list from database
-        List<DbCity> dbCityList = getUserSavedcities();
+        userCityList = util.getUserSavedcities(this);
+
+
+
+        // Fetch the weather data for each city
+        for(DbCity dbCity : userCityList) {
+            getCityWeather(dbCity.getLon(), dbCity.getLat(), 1, "vi", "metric", API_KEY);
+        }
 
         // Set the drawer layout
         setDrawerLayout();
-
-        // Fetch the weather data for each city
-        for(DbCity dbCity : dbCityList) {
-            getCityWeather(dbCity.getLon(), dbCity.getLat(), 1, "vi", "metric", API_KEY);
-        }
 
         // Swipe to refresh feature
         swiperefresh.setOnRefreshListener(() -> {
             cityWeatherList.clear();
             // Fetch the weather data again
-            for(DbCity dbCity : dbCityList) {
+            for(DbCity dbCity : userCityList) {
                 getCityWeather(dbCity.getLon(), dbCity.getLat(), 1, "vi", "metric", API_KEY);
             }
 
@@ -91,35 +109,6 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
 
 
 
-    }
-
-    private List<DbCity> getUserSavedcities() {
-        // Get the list of cities from the database
-        List<DbCity> dbCityList = new ArrayList<>();
-        ConnectDbUtil dbUtil = new ConnectDbUtil(this); // 'this' is the Activity context
-        dbUtil.processCopy();
-        SQLiteDatabase database = dbUtil.openDatabase();
-
-        // query data
-        Cursor c = database.rawQuery(
-                "SELECT id, city_name, city_longitude, city_latitude, country, state " +
-                        "FROM city " +
-                        "where id IN " +
-                        "(SELECT city_id FROM users_city WHERE users_id = 1)", null);
-
-        c.moveToFirst();
-
-        // get data
-        while (c.isAfterLast() == false) {
-            DbCity dbCity = new DbCity(c.getInt(0), c.getString(1),
-                    c.getDouble(2), c.getDouble(3),
-                    c.getString(4), c.getString(5));
-
-            dbCityList.add(dbCity);
-            c.moveToNext();
-        }
-        c.close();
-        return dbCityList;
     }
 
     private void initCityWeatherView(){
@@ -132,23 +121,9 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         weatherAdapter = new CityWeatherAdapter(cityWeatherList, this::onWeatherItemClick);
 
-        recyclerView.setAdapter(weatherAdapter);
+        tvcityname.setText("");
         swiperefresh = findViewById(R.id.swiperefresh);
 
-
-        // Set button to open sidebar
-        btnOpenSidebar.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-
-        navigationView.setNavigationItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_settings) {
-                startActivity(new Intent(CitiesWeatherViewActivity.this, SettingsViewActivity.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            }
-            return false;
-        });
-
-        tvcityname.setText("");
     }
 
     private void initDrawerLayout() {
@@ -158,11 +133,14 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
         // Ensure the navigation view has been properly initialized
         View headerView = navigationView.getHeaderView(0); // Assuming the buttons are in the header
 
+
         if (headerView != null) {
             navSearchButton = headerView.findViewById(R.id.nav_search);
             navSettingsButton = headerView.findViewById(R.id.nav_settings);
+            lvcity = headerView.findViewById(R.id.lvcity);
+            citymngbtn = headerView.findViewById(R.id.citymngbtn);
         } else {
-            Log.e("CitiesWeatherViewActivity", "Header view is null");
+            Log.e("MainViewActivity", "Header view is null");
         }
 
         btnOpenSidebar = findViewById(R.id.btnOpenSidebar);
@@ -190,15 +168,20 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
 
     }
 
+
     private void setDrawerLayout() {
         btnOpenSidebar.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
 
         if (navSearchButton != null) {
             navSearchButton.setOnClickListener(v -> {
-                Toast.makeText(CitiesWeatherViewActivity.this, "Search clicked", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(new Intent(CitiesWeatherViewActivity.this, SearchCityViewActivity.class));
+                intent.putExtra("fromActivity", "main");
+                startActivity(intent);
+                drawerLayout.closeDrawer(GravityCompat.START);
+                finish();
             });
         } else {
-            Log.e("MainViewActivity", "navSearchButton is null");
+            Log.e("CitiesWeatherViewActivity", "navSearchButton is null");
         }
 
         if (navSettingsButton != null) {
@@ -206,15 +189,49 @@ public class CitiesWeatherViewActivity extends AppCompatActivity {
                 startActivity(new Intent(CitiesWeatherViewActivity.this, SettingsViewActivity.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
             });
+
         } else {
-            Log.e("MainViewActivity", "navSettingsButton is null");
+            Log.e("CitiesWeatherViewActivity", "navSettingsButton is null");
         }
+
+        if (lvcity == null) {
+            Log.e("MainViewActivity", "lvcity is null");
+        } else {
+            lvcity.setLayoutManager(new LinearLayoutManager(this));
+            drawerCityAdapter = new DrawerCityAdapter(this, userCityList, new DrawerCityAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    DbCity city = userCityList.get(position);
+                    Intent intent = new Intent(CitiesWeatherViewActivity.this, MainViewActivity.class);
+                    intent.putExtra("locationSelected", true);
+                    intent.putExtra("cityName", city.getName());
+                    intent.putExtra("lon", city.getLon());
+                    intent.putExtra("lat", city.getLat());
+                    startActivity(intent);
+                    finish();
+                }
+            });
+
+            lvcity.setAdapter(drawerCityAdapter);
+        }
+
+        if (citymngbtn != null) {
+            citymngbtn.setOnClickListener(v -> {
+                startActivity(new Intent(CitiesWeatherViewActivity.this, LocationManagementViewActivity.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
+            });
+        } else {
+            Log.e("MainViewActivity", "citymngbtn is null");
+        }
+
+
     }
 
 
     private void onWeatherItemClick(CityWeather dailyWeather) {
         Intent intent = new Intent(CitiesWeatherViewActivity.this, MainViewActivity.class);
         intent.putExtra("locationSelected", true);
+        intent.putExtra("cityName",dailyWeather.getCity());
         intent.putExtra("lon", dailyWeather.getLon());
         intent.putExtra("lat", dailyWeather.getLat());
         startActivity(intent);

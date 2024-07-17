@@ -35,12 +35,22 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"/>
 
-    <Button
-        android:id="@+id/citymngbtn"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quản lí vị trí" />
-
+        android:orientation="horizontal"
+        android:layout_marginBottom="30dp"
+        android:gravity="center">
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/citymngbtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quản lí vị trí"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="@color/purple_200"
+        app:cornerRadius="16dp" />
+    </LinearLayout>
 
     <!-- Other navigation drawer content here -->
 

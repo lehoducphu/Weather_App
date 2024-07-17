@@ -18,7 +18,9 @@ import com.example.weatherforecast.R;
 import com.example.weatherforecast.adapter.CityAdapter;
 import com.example.weatherforecast.adapter.CityMgtAdapter;
 import com.example.weatherforecast.adapter.DrawerCityAdapter;
+import com.example.weatherforecast.model.dbmodel.DbCity;
 import com.example.weatherforecast.model.geocoding.City;
+import com.example.weatherforecast.util.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +29,9 @@ public class LocationManagementViewActivity extends AppCompatActivity {
 
     private RecyclerView rvcity;
     private CityMgtAdapter adapter;
-    private List<City> locations;
+    private List<DbCity> locations;
     private ImageButton backBtn;
     private ImageButton navSearchButton;
-
 
 
     @Override
@@ -41,12 +42,14 @@ public class LocationManagementViewActivity extends AppCompatActivity {
         rvcity = findViewById(R.id.rvcity);
         rvcity.setLayoutManager(new LinearLayoutManager(this));
 
-        // Sample data
-        locations = new ArrayList<>();
-        locations.add(new City("Hà Nội", 21.0285, 105.8542, "VN", null));
-        locations.add(new City("Hồ Chí Minh", 10.762622, 106.660172, "VN", null));
 
-        adapter = new CityMgtAdapter(this, locations, this::onItemLongClick);
+        // get user city list from database
+        locations = util.getUserSavedcities(this);
+//        locations.add(new DbCity("Hà Nội", 105.8542, 21.0285, "VN", null));
+//        locations.add(new DbCity("Hồ Chí Minh", 106.660172, 10.762622, "VN", null));
+
+
+        adapter = new CityMgtAdapter(this, locations, this::onItemClick, this::onItemLongClick);
         rvcity.setAdapter(adapter);
 
         // Set back button
@@ -66,10 +69,23 @@ public class LocationManagementViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(LocationManagementViewActivity.this, SearchCityViewActivity.class);
+                intent.putExtra("fromActivity", "management");
                 startActivity(intent);
                 finish();
             }
         });
+    }
+
+    public void onItemClick(View view, int position) {
+        // go to Main view to display weather
+        DbCity city = locations.get(position);
+        Intent intent = new Intent(LocationManagementViewActivity.this, MainViewActivity.class);
+        intent.putExtra("locationSelected", true);
+        intent.putExtra("cityName",city.getName());
+        intent.putExtra("lon", city.getLon());
+        intent.putExtra("lat", city.getLat());
+        startActivity(intent);
+        finish();
     }
 
     public void onItemLongClick(View view, int position) {
@@ -81,6 +97,7 @@ public class LocationManagementViewActivity extends AppCompatActivity {
         popupMenu.getMenuInflater().inflate(R.menu.location_management_menu, popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.menu_delete) {
+                util.deleteUserCityById(this, locations.get(position).getId());
                 locations.remove(position);
                 adapter.notifyItemRemoved(position);
                 return true;

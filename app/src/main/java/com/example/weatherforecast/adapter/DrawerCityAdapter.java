@@ -12,29 +12,30 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weatherforecast.R;
+import com.example.weatherforecast.model.dbmodel.DbCity;
 import com.example.weatherforecast.model.geocoding.City;
 import com.example.weatherforecast.model.weather.CityWeather;
 
 import java.util.List;
 
 public class DrawerCityAdapter extends RecyclerView.Adapter<DrawerCityAdapter.CityViewHolder> {
-    private List<City> cityList;
+    private List<DbCity> cityList;
     private Context context;
-    private OnItemLongClickListener longClickListener;
+    private OnItemClickListener onClickListener;
 
-    public DrawerCityAdapter(Context context, List<City> cityList, OnItemLongClickListener longClickListener) {
+    public DrawerCityAdapter(Context context, List<DbCity> cityList, OnItemClickListener onClickListener) {
         this.context = context;
         this.cityList = cityList;
-        this.longClickListener = longClickListener;
+        this.onClickListener = onClickListener;
     }
 
-    public interface OnItemLongClickListener {
-        void onItemLongClick(View view, int position);
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
     }
 
 
 
-    public DrawerCityAdapter(List<City> cityList) {
+    public DrawerCityAdapter(List<DbCity> cityList) {
         this.cityList = cityList;
     }
 
@@ -47,23 +48,24 @@ public class DrawerCityAdapter extends RecyclerView.Adapter<DrawerCityAdapter.Ci
 
     @Override
     public void onBindViewHolder(@NonNull DrawerCityAdapter.CityViewHolder holder, int position) {
-        City city = cityList.get(position);
+        DbCity city = cityList.get(position);
 
-        holder.tvcityname.setText(city.getName());
+        String name = city.getName();
+        holder.tvcityname.setText(name);
 
         // if state is not null, concat with country
-        String state = "";
         String country = city.getCountry();
         if(city.getState()!=null){
             country = city.getState() + ", " + country;
         }
         holder.tvcountry.setText(country);
-        holder.itemView.setOnLongClickListener(v -> {
-            if (longClickListener != null) {
-                longClickListener.onItemLongClick(v, position);
-                return true;
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(onClickListener != null){
+                    onClickListener.onItemClick(view, position);
+                }
             }
-            return false;
         });
     }
 

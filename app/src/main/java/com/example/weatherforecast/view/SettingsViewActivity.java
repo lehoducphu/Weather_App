@@ -203,6 +203,9 @@ public class SettingsViewActivity extends AppCompatActivity {
         options.add("Không bao giờ");
         options.add("Mỗi giờ");
         options.add("Mỗi 3 giờ");
+        options.add("Mỗi 6 giờ");
+        options.add("Mỗi 12 giờ");
+        options.add("Mỗi 24 giờ");
 
 
         ArrayAdapter adapter = new ArrayAdapter(this, R.layout.custom_spinner_layout, options);

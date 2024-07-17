@@ -54,5 +54,8 @@ public class City {
     public String getState() {
         return state;
     }
+    public void setName(String name) {
+        this.name = name;
+    }
 }
 
