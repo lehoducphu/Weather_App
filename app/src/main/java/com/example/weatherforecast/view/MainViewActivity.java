@@ -6,9 +6,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,7 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,9 +51,7 @@ import com.example.weatherforecast.model.weather.DailyWeatherResponse;
 import com.example.weatherforecast.model.weather.HourlyWeather;
 import com.example.weatherforecast.model.weather.HourlyWeatherResponse;
 import com.example.weatherforecast.model.weather.WeatherList;
-import com.example.weatherforecast.notification.DailyNotification;
 import com.example.weatherforecast.notification.NotificationReceiver;
-import com.example.weatherforecast.util.ConnectDbUtil;
 import com.example.weatherforecast.util.util;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -69,8 +66,6 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -144,6 +139,7 @@ public class MainViewActivity extends AppCompatActivity {
     private TextView visibility_value;
     private TextView sunrise_value;
     private TextView sunset_value;
+    private LinearLayout dayforcastlayout;
 
     private final Handler handler = new Handler();
     private Runnable refreshRunnable;
@@ -161,13 +157,31 @@ public class MainViewActivity extends AppCompatActivity {
         initDailyWeather();
         initExtraWeatherInfo();
 
+        dayforcastlayout = findViewById(R.id.dayforcastlayout);
+        dayforcastlayout.setOnClickListener(v -> {
+            Intent intent = new Intent(MainViewActivity.this, FiveDayWeatherView.class);
+            startActivity(intent);
+        });
+
+        dayforcastlayout.setOnLongClickListener(view -> {
+            Intent intent = new Intent(MainViewActivity.this, FiveDayWeatherView.class);
+            startActivity(intent);
+            return true;
+        });
+
 
         // Set drawer layout
         setDrawerLayout();
 
-        // setup weather notification
-//        notifyDailyWeather();
 
+        // setup weather notification
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13
+            if (ActivityCompat.checkSelfPermission(this, "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{"android.permission.POST_NOTIFICATIONS"}, 1001);
+            }
+        }
+        scheduleNotification();
+        Log.v("Main", "scheduleNotification called");
     }
 
 
@@ -289,60 +303,17 @@ public class MainViewActivity extends AppCompatActivity {
         }
     }
 
-    private void notifyDailyWeather() {
-        DailyNotification dailyNotification = new DailyNotification(this);
-        dailyNotification.createNotificationChannel();
-
-        // Find the button and set an OnClickListener to trigger the notification
-        Button notifyButton = findViewById(R.id.notify_button);
-        notifyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendNotification();  // Call the method to send the notification
-            }
-        });
-    }
 
     private void scheduleNotification() {
         Intent intent = new Intent(this, NotificationReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        long interval = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-        // Cancel any existing alarms to avoid duplicates
+        long interval = 30 * 1000; // 5 minutes in milliseconds
         alarmManager.cancel(pendingIntent);
-
-        // Set a repeating alarm that triggers every 5 minutes
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
     }
 
-    private void sendNotification() {
-        Intent intent = new Intent(this, FiveDayWeatherView.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Caothuludau")
-                .setSmallIcon(R.drawable.weather_clear_day)
-                .setContentTitle("Example Notification")
-                .setContentText("This is an example notification")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        notificationManager.notify(1, builder.build());
-    }
 
     public void initCurrentWeatherView() {
         tvCityname = findViewById(R.id.tvcityname);

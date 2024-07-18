@@ -76,8 +76,8 @@
 
                             <ImageView
                                 android:id="@+id/ivWeatherIcon"
-                                android:layout_width="150dp"
-                                android:layout_height="150dp"
+                                android:layout_width="120dp"
+                                android:layout_height="120dp"
                                 android:layout_alignParentEnd="true"
                                 android:layout_alignParentTop="true"
                                 android:layout_marginStart="16dp" />
@@ -88,13 +88,11 @@
 
                         <!-- Phần thời tiết theo giờ -->
 
-                        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="16dp">
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:background="@drawable/background_translucent_border"
                                 android:orientation="vertical">
                             <TextView
                                 android:text="Dự báo thời tiết theo giờ"
@@ -113,13 +111,15 @@
                                 android:layout_height="match_parent"
                                 android:orientation="horizontal"/>
                             </LinearLayout>
-                        </RelativeLayout>
 
                         <LinearLayout
-                            android:id="@+id/container_main_first_daily_card_container"
+                            android:id="@+id/dayforcastlayout"
                             android:orientation="vertical"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:background="@drawable/background_translucent_border"
+                            >
 
                             <TextView
                                 android:id="@+id/container_main_daily_trend_card_title"
@@ -187,10 +187,12 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:padding="16dp"
+                            android:layout_marginTop="16dp"
+                            android:background="@drawable/background_translucent_border"
+                            >
 
                             <TextView
                                 android:id="@+id/aqi_label"
@@ -223,10 +225,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:background="@android:color/transparent"
                             android:columnCount="2"
                             android:padding="16dp"
-                            android:rowCount="2">
+                            android:rowCount="2"
+                            android:background="@drawable/background_translucent_border"
+                            >
 
                             <!-- Gió -->
                             <LinearLayout
@@ -342,8 +345,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:background="@android:color/transparent"
                             android:orientation="horizontal"
+                            android:background="@drawable/background_translucent_border"
                             android:padding="16dp"> <!-- Nền trong suốt -->
 
                             <!-- Bình minh -->
